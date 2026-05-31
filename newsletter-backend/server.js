@@ -108,17 +108,36 @@ app.use(protect);
 // })
 //only use for testing auth
 //
+app.get("/",(req,res)=>{
+    res.json({
+        message:"Valid user"
+    })
+})
+app.get("/Plans/user",(req,res)=>{
+    res.json({
+        message: "valid user"
+    })
+})
 app.patch("/Plans/user",async (req,res)=>{
     const updates = req.body
     const fields = Object.keys(updates).filter(field=> field !== 'email')
     const updateValues = fields.map(field=>updates[field])
     const updateFields =  fields.map((field,i)=>`${field} = $${i+1}`).join(",")
+    if(req.body.plans !== null){
     await database.query(`update users set ${updateFields} where id = $${fields.length + 1}`,[...updateValues,req.user.id])
     //it says theres also some error in the above query mind checking it tomorrow ?
+    }
+    else{
+        console.log("Null plans not appended")
+    }
     const data = (await database.query("select email , plans from users where email = $1",[req.user.email])).rows[0]
     
-    if(data.plans && data.plans !== "none"){
+    if(data.plans && data.plans !== null){
     await database.query("update users set expiry = NOW() + $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])
+    }
+    else if(data.plans === null){
+        console.log(data,"hit null plan")
+        await database.query("update users set expiry = null where plans is null")
     }
     else{
         console.log("No plans found in data",data)
@@ -127,7 +146,6 @@ app.patch("/Plans/user",async (req,res)=>{
         message: "update success",
         plan: data.plans
     })
-
 })
 app.get("/news",(req,res)=>{
     res.json({

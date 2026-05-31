@@ -14,7 +14,23 @@ class Plans extends Component {
     }
     state = {
         plan: "",
-        firstLoad: true
+        
+    }
+    checkUser = async () => {
+        const response = await fetch("http://localhost:5001/Plans/user",{
+            method:"GET",
+            headers:{
+                "authorization" : localStorage.getItem("token")
+            }
+        })
+        const data = await response.json()
+        if(!(response.ok)){
+            this.props.navigate("/")
+            localStorage.clear("token")
+        }
+        else{
+            console.log("Select a plan user")
+        }
     }
    setPlan = async (plan) => {const response = await fetch("http://localhost:5001/Plans/user",{
     
@@ -30,15 +46,17 @@ class Plans extends Component {
     })
 
    });
-   console.log("error at fetch")
+   
    if(response.ok){
     console.log("response is okay")
    const data = await response.json()
-    if(data.plans && data.plans !== "none"){
-        // this.props.navigate("/NewsPage")
+    if(data.plan && data.plan !== null){
+        this.props.navigate("/NewsPage")
         this.setState({firstLoad: false})
+        localStorage.setItem("preventRerun",true)
     }
     else{
+        console.log(data)
         console.log("Please select a plan")
     }
    }
@@ -49,11 +67,9 @@ class Plans extends Component {
 }
   
     componentDidMount(){
-        if(this.state.firstLoad){
-            this.setPlan("none")
-        }
-            
-            //fix this else whenever the page reloads the userplan is gone
+        
+        this.checkUser()
+        //fix this else whenever the page reloads the userplan is gone
         //you need to fix this part where page reload sends plan as null make this run only on 
         // first load of page that too if plans are not set already
         //maybe an if condition

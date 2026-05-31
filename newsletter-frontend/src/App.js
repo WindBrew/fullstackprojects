@@ -5,9 +5,9 @@ import NewsContent from "./components/ui/newscont";
 import StartPage from "./components/ui/startPage";
 import Plans from "./components/ui/plans";
 import Loader from "./components/ui/loader";
-import {saveData,loadData,saveTheme, fetchTheme} from "./components/utils/storage";
-import { logout } from "./components/utils/logout";
-import { planData } from "./components/utils/planData";
+import {saveTheme, fetchTheme} from "./components/utils/storage";
+// import logout  from "./components/utils/logout";
+// import { planData } from "./components/utils/planData";
 import {counterInitiate} from "./components/utils/counter";
 import { setSub } from "./components/utils/setSubscriber";
 import { expirationTimer } from "./components/utils/expiration";
@@ -18,6 +18,8 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
+  useNavigate
 } from "react-router-dom";
 
 import React, { Component } from "react";
@@ -32,10 +34,18 @@ import React, { Component } from "react";
 //new level (btw keep it readable code easy to understand)
 //a journey of rearrangement and organizing what we built
 //to the advanced
-export default class App extends Component {
+function withRouter(Component){
+  return function(props){
+    const location = useLocation()
+    const navigate = useNavigate()
+    return <Component {...props} location={location} navigate={navigate}/>
+  }
+}
+
+class App extends Component {
   state = {
     email : "",
-    subscriber: loadData(),
+    
    
     
     // loginCount : JSON.parse(localStorage.getItem("Subscribedthis.userbase")).subscribers.map((subs) =>{
@@ -48,16 +58,11 @@ export default class App extends Component {
      dark: false,
      webTitle: "NewsBy10Tacles",
      page: "Active",
-     modalToggler: ""
-
+     modalToggler: "",
+     userLocation : this.props.location.pathname
+    
       }
-      get user(){ // use get func when u dont wanna pass parameters and call it directly
-        //not preffered for complex funcs as it can be confusing
-        //clean for returning simple outputs just clean
-        //i used it to obtain a global val
-         return this.state.subscriber[this.state.email]
-      }
-   
+     
   
   
   setMails = (mails)=>{
@@ -78,6 +83,13 @@ export default class App extends Component {
         
          
        
+  }
+  logout = () =>{
+    localStorage.removeItem("token")
+    if(!localStorage.getItem("token"))
+    {
+      this.props.navigate("/")
+    }
   }
   toggleModal = (page) =>{
     this.setState({modalToggler: page})
@@ -136,19 +148,17 @@ export default class App extends Component {
   
   console.log(this.state.email)
     console.log(this.state.subscriber)
-     console.log("This local storage as whole 1 : ",loadData())
+    
     if(  this.user && this.user.plan === "Subscribed" && this.user.expiry > 0) {
       
       console.log("reachingMatched")
         console.log("matched")
         this.setState({category: this.state.page === "Active" ? "all" : this.state.category})
-        this.setState({togglePlanNews: "News"}
-
-        ) // made home page display
+    // made home page display
         //condition false as soon as page gets displayed by it being true so that it doesn't prevent
         //other pages from loading 17-03-26
         
-       expirationTimer(this,saveData,counterInitiate,setSub,this.resetCategoryandpage)//keep eye for inf loops // fix for expiration its not working ???
+     //  expirationTimer(this,saveData,counterInitiate,setSub,this.resetCategoryandpage)//keep eye for inf loops // fix for expiration its not working ???
         
 
 
@@ -157,7 +167,7 @@ export default class App extends Component {
 else if(!(this.user)){ // used to define the mail in database even with plan being none
    
   console.log("Not a subscriber yet",this.state.subscriber)
-   setSub(this,"none",0,saveData)
+  // setSub(this,"none",0,saveData)
 }   
 
 }
@@ -189,6 +199,10 @@ componentDidMount(){
    
     this.setState({dark: true},()=>saveTheme(this.state.dark))
   }
+}
+componentDidUpdate(prevProps){
+  if(prevProps.location.pathname !== this.props.location.pathname)
+      this.setState({ userLocation : this.props.location.pathname})
 }
 toShowtitle = () =>{
   return(
@@ -227,11 +241,11 @@ toShowtitle = () =>{
     //       ) : (<Navigate to="/"/>)
     // } switching to conditional rendering as this renders every re render in the back */}
     return (
-      <Router>
+      
       <div className=" bg-gray-200 text-black h-full dark:bg-gray-900 dark:text-white w-full flex-[1_0_auto]">
     
      <Modetoggle darkCheck={this.state.dark} loginStat={this.state.isloggedIn} toggleplanCheck={this.state.togglePlanNews} switchTheme = {this.setTheme}/>
-      {this.state.isloggedIn && this.state.togglePlanNews === "News" && <Navbar pageName = {this.toShowtitle} page={this.state.modalToggler} category={this.passCategory} loader={this.doLoad}/> 
+      {(this.state.userLocation === "/NewsPage" || this.state.userLocation === "/InactivePage") && <Navbar pageName = {this.toShowtitle} page={this.state.modalToggler} category={this.passCategory} logoutFunc={this.logout} loader={this.doLoad}/> 
   }
       {this.state.loader && <Loader/>}
      
@@ -246,9 +260,7 @@ toShowtitle = () =>{
             loader = {this.doLoad}/> 
              </>}/>  
         <Route path="/Plans" 
-        element={<Plans planStats = 
-        {(planrecv,expiry)=>planData(planrecv,expiry,this,saveData)} 
-        logout = {()=>logout(this,saveData)} loader = {this.doLoad}/> }/>
+        element={<Plans loader = {this.doLoad} logout={this.logout}/> }/>
         </Routes>
 {/*  
     {!this.state.isloggedIn && (<Navigate to="/" replace />)}
@@ -267,7 +279,7 @@ toShowtitle = () =>{
      */}
       </div>
       
-      </Router>
+      
     );
   }
      
@@ -276,3 +288,4 @@ toShowtitle = () =>{
 // note for nextt togglePlanNews - store login status in local storage add multiple subscribers and make the plans page pop up if 
 // subscrip!ion status isloggedIn && <Navigate to="/" replace />
 // not sub and add loading checking api status and element loaded ? if no show loading
+export default withRouter(App)

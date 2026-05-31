@@ -1,36 +1,53 @@
- export const logout = (comp,saveData) =>{
-    //add logout functionality to show subpage and save the expiry stuff well it already saves just manage it
+//  export const logout = (comp,saveData) =>{
+//     //add logout functionality to show subpage and save the expiry stuff well it already saves just manage it
      
-   clearInterval(comp.timecount)
+//    clearInterval(comp.timecount)
   
-    comp.setState(prevState=>({subscriber: {...prevState.subscriber , [prevState.email]: 
-      {...prevState.subscriber[prevState.email], 
-        expiry: prevState.subscriber[prevState.email].expiry - prevState.counter}},
+//     comp.setState(prevState=>({subscriber: {...prevState.subscriber , [prevState.email]: 
+//       {...prevState.subscriber[prevState.email], 
+//         expiry: prevState.subscriber[prevState.email].expiry - prevState.counter}},
       
         
-        togglePlanNews: "Plans",
-        loader: true, 
-        isloggedIn: false,
-        category: "all",
-        page:"Active"
-      }
+//         togglePlanNews: "Plans",
+//         loader: true, 
+//         isloggedIn: false,
+//         category: "all",
+//         page:"Active"
+//       }
 
       
       
       
-      )
-        ,
-      ()=>{
-       saveData(comp.state.subscriber);
-        console.log("counter is",comp.state.counter)
-        comp.setState({counter: 0,
+//       )
+//         ,
+//       ()=>{
+//        saveData(comp.state.subscriber);
+//         console.log("counter is",comp.state.counter)
+//         comp.setState({counter: 0,
      
-      }); 
+//       }); 
       
-      clearTimeout(comp.timeout);
-      clearTimeout(comp.logouttime);
+//       clearTimeout(comp.timeout);
+//       clearTimeout(comp.logouttime);
       
      
-  })
+//   })
    
-  }
+//   }
+import { useNavigate } from "react-router-dom"
+// function withNavigate(Component){
+//     return function(props){
+//         const navigate = useNavigate()
+//         return <Component {...props} navigate = {navigate} />
+//     }
+// }
+const  logout = ()=>{
+localStorage.removeItem("token")
+// const navigate = useNavigate()
+// if(!localStorage.getItem("token")){
+//     navigate("/")
+// }
+
+console.log("reached the logout func")
+}
+export default logout;

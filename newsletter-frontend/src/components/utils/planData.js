@@ -1,27 +1,28 @@
   export const planData = (planrec,exp,comp,saveData)=>{
+    
 
     //read at top if u havent count
-    comp.setState((prevState=>({subscriber : {...prevState.subscriber , 
-      [prevState.email] : 
-      {expiry: (prevState.subscriber[prevState.email].expiry ?? 0) + exp - prevState.counter
-          , plan: planrec}}})),
-          ()=>{
-        saveData(comp.state.subscriber)
+    // comp.setState((prevState=>({subscriber : {...prevState.subscriber , 
+    //   [prevState.email] : 
+    //   {expiry: (prevState.subscriber[prevState.email].expiry ?? 0) + exp - prevState.counter
+    //       , plan: planrec}}})),
+    //       ()=>{
+    //     saveData(comp.state.subscriber)
 
       
-       console.log("comp is current expiry : ",comp.user.expiry)
-     comp.setState({loader: true},()=>{comp.checkUser()});
+    //    console.log("comp is current expiry : ",comp.user.expiry)
+    //  comp.setState({loader: true},()=>{comp.checkUser()});
       
 
         
         
-      clearTimeout(comp.timeout);
-      clearTimeout(comp.logouttime);
-      comp.setState({counter: 0})
+    //   clearTimeout(comp.timeout);
+    //   clearTimeout(comp.logouttime);
+    //   comp.setState({counter: 0})
      
     
     
-      console.log("Reached clear timers")
+    //   console.log("Reached clear timers")
       
     
        
@@ -29,7 +30,7 @@
      
    
       
-    })
+    // })
     
     
     // comp adds the expiry and plan status to current mail

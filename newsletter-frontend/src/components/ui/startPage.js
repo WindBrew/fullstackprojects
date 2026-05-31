@@ -13,6 +13,22 @@ class startPage extends Component {
         password:"",
         switchRoute: "Sign Up"
     }
+    checkToken = async() =>{
+      const response = await fetch("http://localhost:5001/",{
+        method:"GET",
+        headers:{
+          "authorization":localStorage.getItem("token")
+        }
+      })
+      const data = await response.json()
+      if(!response.ok){
+        console.log("Invalid token or please login/signup")
+        localStorage.removeItem("token")
+      }
+      else{
+        this.props.navigate("/Plans")
+      }
+    }
  
     windowToTop = () =>{
       window.scrollTo({top:0})
@@ -24,10 +40,11 @@ class startPage extends Component {
           console.log("called loader in plans")
       setTimeout(()=>{
         this.props.loader(false)
-      },300)
-      if(localStorage.getItem("token")){
-        this.props.navigate("/Plans")
+        if(localStorage.getItem("token")){
+        this.checkToken()
       }
+      },300)
+      
     }
        sendMaildata = async (e) =>{
         this.props.mailtoparent(this.state.email,true)
@@ -51,7 +68,7 @@ class startPage extends Component {
      
      localStorage.setItem("token",data.token)
      if(localStorage.getItem("token")){
-      this.props.navigate("/Plans")
+      this.checkToken()
      }
      console.log(data)
  

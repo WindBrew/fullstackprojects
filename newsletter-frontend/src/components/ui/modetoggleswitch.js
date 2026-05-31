@@ -1,12 +1,20 @@
 import { Component } from "react";
 import lighticon from "../media/lighticon.svg";
 import darkicon from "../media/darkicon.svg";
+import { useLocation } from "react-router-dom";
 
-export default class modetoggle extends Component {
+function withLocation(Component){
+  return function(props){
+    const location = useLocation()
+    return <Component {...props} location={location} />
+  }
+}
+
+class modetoggle extends Component {
    
     render(){
         return(
-              <div className={`${!this.props.loginStat ? "top-2 right-[1%]" : this.props.toggleplanCheck === "Plans" ? "lg:right-[8%] top-4 md:right-[10%] right-[50%]" : "top-4 lg:right-[24%] md:right-[39%] right-[12%]"} fixed z-50`}> 
+              <div className={`${this.props.location.pathname === "/" ? "top-2 right-[1%]" : this.props.location.pathname === "/Plans" ? "lg:right-[8%] top-4 md:right-[10%] right-[50%]" : "top-4 lg:right-[24%] md:right-[39%] right-[12%]"} fixed z-50`}> 
                   
                 <button
                 //use target blur when u dont want the button to be focused on
@@ -39,3 +47,4 @@ export default class modetoggle extends Component {
         )
     }
 }
+export default withLocation(modetoggle)

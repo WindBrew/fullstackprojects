@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import { NavLink} from "react-router-dom";
 import {ReactComponent as Hamburgerbutton} from "../media/hamburger.svg"
+import { useNavigate } from "react-router-dom";
+function withNavigate(Component){
+  return function(props){
+    const navigate = useNavigate()
+    return <Component {...props} navigate={navigate} />
+  }
+}
 
-export default class navbar extends Component {
+class navbar extends Component {
    toggles = () =>{
     this.props.planToggle("Plans")
     
@@ -200,7 +207,7 @@ componentDidUpdate(prevProp){
                     Plans
                   </span>
                   {"          "}
-                  <span onClick={this.toggles} className="text-blue-900 block absolute top-full left-0 group-hover:translate-y-[-90%] transition-transform duration-300">
+                  <span onClick={()=>this.props.navigate("/Plans")} className="text-blue-900 block absolute top-full left-0 group-hover:translate-y-[-90%] transition-transform duration-300">
                     Plans
                   </span>
                 </NavLink>
@@ -210,7 +217,7 @@ componentDidUpdate(prevProp){
                
           
             </ul>
-             <button  onClick={this.props.logout} className="ml-4 mt-3 right-0 py-1 px-2 rounded font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
+             <button  onClick={this.props.logoutFunc} className="ml-4 mt-3 right-0 py-1 px-2 rounded font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
             Log out
           </button>
            
@@ -226,3 +233,4 @@ componentDidUpdate(prevProp){
     );
   }
 }
+export default withNavigate(navbar)
