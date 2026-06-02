@@ -13,6 +13,7 @@ import { setSub } from "./components/utils/setSubscriber";
 import { expirationTimer } from "./components/utils/expiration";
 import Modetoggle from "./components/ui/modetoggleswitch";
 import InactivePage from "./components/ui/InactivePage";
+import {io} from "socket.io-client";
 import {
   BrowserRouter as Router,
   Routes,
@@ -41,7 +42,11 @@ function withRouter(Component){
     return <Component {...props} location={location} navigate={navigate}/>
   }
 }
-
+const socket = io("http://localhost:5001",{
+  auth:{
+    token: localStorage.getItem("token")
+  }
+})
 class App extends Component {
   state = {
     email : "",
@@ -198,6 +203,12 @@ componentDidMount(){
     document.documentElement.classList.add("dark") 
    
     this.setState({dark: true},()=>saveTheme(this.state.dark))
+  }
+  if(localStorage.getItem("token")){
+    socket.on("planExpired",()=>{
+      this.props.navigate("/Plans")
+      console.log("socket.io responded to client")
+    })
   }
 }
 componentDidUpdate(prevProps){

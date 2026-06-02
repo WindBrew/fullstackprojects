@@ -4,41 +4,109 @@ const pg = require("pg");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const auth = require("jsonwebtoken");
+const {Server} = require("socket.io")
+const http = require("http")
 const {createClient} = require('redis');
 const redis = createClient()
-async function startServer(){
-    await redis.connect()
-}
-                                                                          
-
 const app = express()
 const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
 app.use(cors({origin: 'http://localhost:3000'}))
-const protect = (req,res,next) =>{
-    try{
-    const token = req.headers["authorization"]
-    const decoded = auth.verify(token,process.env.authkey)
-   req.user = decoded
+async function startServer(){
+    await redis.connect()
+}
+const userSockets = new Map()
+ const deauthToken = (token) =>{
+  console.log("hitting deAuth")
+    if(token){
+        console.log("reaching deauth token")
+        try{
+            const decoded = auth.verify(token,process.env.authkey)
+            console.log("in deauth try : ",decoded)
+            return decoded
+        }
+        catch(err){
+            
+        return null
+            
+        }
+    }
 
+ }                                                                         
+const server = http.createServer(app)
+const io = new Server(server ,{
+    cors: {
+        origin: 'http://localhost:3000'
+    }
+})
+io.on("connection",(socket)=>{
+    const token = socket.handshake.auth.token
+    const user = deauthToken(token)
+
+    if(!user){
+        console.log("invalid token")
+    }
+    else{
+    userSockets.set(user.id, socket)
+    }
+   
+})
+//the bug is likely arising from the condition where interval is set when the user is detected in cache but user isnt in cache yet
+
+ io.on("disconnect",(socket)=>{
+    const token = socket.handshake.auth.token
+    const user = deauthToken(token)
+        if(userSockets.get(user.id)){
+        userSockets.delete(user.id)
+        }
+        else{
+            console.log("User does not exist")
+        }
+    })
+
+
+const protect = async (req,res,next) =>{
+    console.log("reaching middleware")
+//     const token = req.headers["authorization"]
+//     const decoded = auth.verify(token,process.env.authkey)
+//    req.user = decoded
+    const decoded = deauthToken(req.headers["authorization"])
+    
+    console.log(decoded)
+    console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
+    if(!decoded){
+       return res.status(401).json({message: "Invalid token provided"})
+    }
+    else{
+        req.user = decoded
+    if(await redis.get(String(decoded.id))){
     const userExpiry = setInterval(async ()=>{
+        console.log("Listening interval")
         if(Number( await redis.get(String(decoded.id))) < Date.now()){
             await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,decoded.id])
-            clearInterval(userExpiry)
+     
+            
+           
+            const socket = userSockets.get(decoded.id)//returns the stored socket obj not just a contact a whole socket obj
+            if(socket){
+            socket.emit("planExpired")
+            }
+            redis.del(String(decoded.id))
+                   clearInterval(userExpiry)
+                   return;
         }
         else{
             console.log("plan still valid", Date.now())
         }
     
     },5000)
-   
-   
-   next();
-    }
-    catch(err){
-      return  res.status(401).json({message: "No token found or invalid token"})
-    }
+}
+ next();
+}
+  
+    
+    
 
 }
 app.use(express.json())
@@ -177,7 +245,5 @@ app.get("/news",(req,res)=>{
         user: req.user
     })
 })
-app.listen(5001,(req,res)=>{
-    console.log("listening to port :5001")
-})
+server.listen(5001)
 startServer()

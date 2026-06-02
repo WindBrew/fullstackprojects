@@ -61,7 +61,7 @@ class Plans extends Component {
     }
    }
    else{
-    console.log("response is not okay yet navigate is not running")
+    console.log("response is not okay yet navigate is not running",response.status)
     this.props.navigate("/")
    }
 }
