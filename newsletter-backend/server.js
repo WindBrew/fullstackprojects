@@ -80,28 +80,7 @@ const protect = async (req,res,next) =>{
     }
     else{
         req.user = decoded
-    if(await redis.get(String(decoded.id))){
-    const userExpiry = setInterval(async ()=>{
-        console.log("Listening interval")
-        if(Number( await redis.get(String(decoded.id))) < Date.now()){
-            await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,decoded.id])
-     
-            
-           
-            const socket = userSockets.get(decoded.id)//returns the stored socket obj not just a contact a whole socket obj
-            if(socket){
-            socket.emit("planExpired")
-            }
-            redis.del(String(decoded.id))
-                   clearInterval(userExpiry)
-                   return;
-        }
-        else{
-            console.log("plan still valid", Date.now())
-        }
     
-    },5000)
-}
  next();
 }
   
@@ -221,11 +200,40 @@ app.patch("/Plans/user",async (req,res)=>{
     const data = (await database.query("select email , plans from users where email = $1",[req.user.email])).rows[0]
     
     if(data.plans && data.plans !== null){
+     if(await redis.get(String(req.user.id))){
+         await database.query("update users set expiry = expiry +  $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])     
+     }
+     else{
     await database.query("update users set expiry = NOW() + $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])
+     }
     await redis.set(String(req.user.id) , String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
     console.log(typeof (String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime())),String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
         // console.log((((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry))instanceof Date)
+        if(await redis.get(String(req.user.id))){
+    const userExpiry = setInterval(async ()=>{
+        console.log("Listening interval")
+        if(Number( await redis.get(String(req.user.id))) < Date.now()){
+            await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
+     
+            
+           
+            const socket = userSockets.get(req.user.id)//returns the stored socket obj not just a contact a whole socket obj
+            if(socket){
+            socket.emit("planExpired")
+            }
+            redis.del(String(req.user.id))
+                   clearInterval(userExpiry)
+                   return;
+        }
+        else{
+            console.log("plan still valid", Date.now())
+        }
+    
+    },5000)
 }
+
+
+    }
     else if(data.plans === null){
         console.log(data,"hit null plan")
         await database.query("update users set expiry = null where plans is null")
