@@ -242,7 +242,7 @@ toShowtitle = () =>{
     // } switching to conditional rendering as this renders every re render in the back */}
     return (
       
-      <div className=" bg-gray-200 text-black h-full dark:bg-gray-900 dark:text-white w-full flex-[1_0_auto]">
+      <div className=" bg-gray-200 text-black h-full dark:bg-gray-900 dark:text-white w-full select-none flex-[1_0_auto]" >
     
      <Modetoggle darkCheck={this.state.dark} loginStat={this.state.isloggedIn} toggleplanCheck={this.state.togglePlanNews} switchTheme = {this.setTheme}/>
       {(this.state.userLocation === "/NewsPage" || this.state.userLocation === "/InactivePage") && <Navbar pageName = {this.toShowtitle} page={this.state.modalToggler} category={this.passCategory} logoutFunc={this.logout} loader={this.doLoad}/> 

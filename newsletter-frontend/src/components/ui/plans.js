@@ -99,7 +99,7 @@ class Plans extends Component {
         advanced control.</p>
     <div className=" grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 mt-10">
     
-        <div className="rounded-3xl  border border-gray-400  p-[3px]  hover: cursor-pointer " onClick={()=>{this.setState({plan: "Base"},()=>this.setPlan("Base"))}}>
+        <div className="rounded-3xl  border border-gray-400  p-[3px]  hover: cursor-pointer " onClick={()=>{this.setState({plan: "Base"}); this.setPlan("Base")}}>
             <div className="flex  flex-col items-center border rounded-3xl border-gray-400 p-4">
                 <span className="mb-6 text-gray-800">Base</span>
                 <span className="mb-3 text-4xl font-medium">Base
@@ -176,7 +176,7 @@ class Plans extends Component {
        
 
     
-        <div className="rounded-3xl border border-gray-400  p-[3px] hover:cursor-pointer" onClick={()=>{this.setState({plan: "Pro"},()=>this.setPlan("Pro"))}}>
+        <div className="rounded-3xl border border-gray-400  p-[3px] hover:cursor-pointer" onClick={()=>{this.setState({plan: "Pro"}); this.setPlan("Pro")}}>
             <div className="flex flex-col items-center border rounded-3xl border-gray-400 p-4">
                 <span className="mb-6 text-gray-800">Pro</span>
                 <span className="mb-3 text-4xl font-medium">Pro</span>
@@ -249,7 +249,7 @@ class Plans extends Component {
         </div>
 
        
-        <div className="rounded-3xl border border-gray-400  p-[3px] hover:cursor-pointer" onClick={()=>{this.setState({plan: "Premium"},()=>this.setPlan("Premium"))}}>
+        <div className="rounded-3xl border border-gray-400  p-[3px] hover:cursor-pointer" onClick={()=>{this.setState({plan: "Premium"}); this.setPlan("Premium")}}>
             <div className="flex flex-col items-center border rounded-3xl  border-gray-400 p-4">
                 <span className="mb-6 text-gray-800">Premium</span>
                 <span className="mb-3 text-4xl font-medium">Premium</span>

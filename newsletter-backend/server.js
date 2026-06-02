@@ -4,14 +4,36 @@ const pg = require("pg");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const auth = require("jsonwebtoken");
+const {createClient} = require('redis');
+const redis = createClient()
+async function startServer(){
+    await redis.connect()
+}
+                                                                          
 
 const app = express()
+const database = new pg.Pool({
+    connectionString: process.env.databasekey
+})
 app.use(cors({origin: 'http://localhost:3000'}))
 const protect = (req,res,next) =>{
     try{
     const token = req.headers["authorization"]
-    const decode = auth.verify(token,process.env.authkey)
-   req.user = decode
+    const decoded = auth.verify(token,process.env.authkey)
+   req.user = decoded
+
+    const userExpiry = setInterval(async ()=>{
+        if(Number( await redis.get(String(decoded.id))) < Date.now()){
+            await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,decoded.id])
+            clearInterval(userExpiry)
+        }
+        else{
+            console.log("plan still valid", Date.now())
+        }
+    
+    },5000)
+   
+   
    next();
     }
     catch(err){
@@ -21,9 +43,7 @@ const protect = (req,res,next) =>{
 }
 app.use(express.json())
 
-const database = new pg.Pool({
-    connectionString: process.env.databasekey
-})
+
 app.post("/signup", async (req,res)=>{
 
     
@@ -134,10 +154,14 @@ app.patch("/Plans/user",async (req,res)=>{
     
     if(data.plans && data.plans !== null){
     await database.query("update users set expiry = NOW() + $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])
-    }
+    await redis.set(String(req.user.id) , String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
+    console.log(typeof (String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime())),String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
+        // console.log((((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry))instanceof Date)
+}
     else if(data.plans === null){
         console.log(data,"hit null plan")
         await database.query("update users set expiry = null where plans is null")
+        
     }
     else{
         console.log("No plans found in data",data)
@@ -156,3 +180,4 @@ app.get("/news",(req,res)=>{
 app.listen(5001,(req,res)=>{
     console.log("listening to port :5001")
 })
+startServer()
