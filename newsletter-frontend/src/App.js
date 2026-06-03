@@ -74,6 +74,22 @@ class App extends Component {
 //of needing a second run to act on the updated state
 //just runs a function after the state updates , avoids reading prev state and only updated state
 // for state reliant functions  
+  if(localStorage.getItem("token")){
+    console.log("token fetched from local storage in app.js")
+      if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
+      //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
+      //the server will read from the old socket instead of new and well no errors but won't work efficiently
+    this.socket = io("http://localhost:5001",{
+  auth:{
+    token: localStorage.getItem("token")
+  }
+})
+this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
+    this.socket.on("planExpired",()=>{
+      this.props.navigate("/Plans")
+      console.log("socket.io responded to client")
+    })
+  }
     this.setState({email: (mails)}, () => {
         console.log(this.state.email)
          
@@ -201,22 +217,7 @@ componentDidMount(){
     this.setState({dark: true},()=>saveTheme(this.state.dark))
   }
 
-  if(localStorage.getItem("token")){
-    console.log("token fetched from local storage in app.js")
-      if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
-      //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
-      //the server will read from the old socket instead of new and well no errors but won't work efficiently
-    this.socket = io("http://localhost:5001",{
-  auth:{
-    token: localStorage.getItem("token")
-  }
-})
-this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
-    this.socket.on("planExpired",()=>{
-      this.props.navigate("/Plans")
-      console.log("socket.io responded to client")
-    })
-  }
+
 }
 componentDidUpdate(prevProps){
   if(prevProps.location.pathname !== this.props.location.pathname)

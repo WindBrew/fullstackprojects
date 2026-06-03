@@ -31,13 +31,16 @@ class newsContent extends Component {
         }
     })
     if(response.ok){
+        
     const data = await response.json()
+
     console.log(data)
     }
     else{
         this.props.navigate("/")
         console.log("response status 401 error")
     }
+    
 }
     checkNew = (targetDate) =>{
         //no need to split new Date handles iso dates
@@ -152,12 +155,13 @@ class newsContent extends Component {
   }
    
     async componentDidMount(){
+        this.props.loader(true)
         await this.loadPagedata()
         this.windowToTop()
         this.validateToken()
         console.log("reached news content")
   
-       
+    
     }
     async componentDidUpdate(x){
         if(x.category !== this.props.category){

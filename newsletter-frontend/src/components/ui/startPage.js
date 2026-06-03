@@ -26,6 +26,11 @@ class startPage extends Component {
         localStorage.removeItem("token")
       }
       else{
+        if(data.plan){
+          this.props.navigate("/NewsPage")
+          this.props.loader(true)
+          return;
+        }
         this.props.navigate("/Plans")
       }
     }
@@ -47,7 +52,7 @@ class startPage extends Component {
       
     }
        sendMaildata = async (e) =>{
-        this.props.mailtoparent(this.state.email,true)
+        
         
         e.preventDefault();//if u press enter without this to submit it reloads page and react resets back
         // to starter page again
@@ -68,6 +73,7 @@ class startPage extends Component {
      
      localStorage.setItem("token",data.token)
      if(localStorage.getItem("token")){
+      this.props.mailtoparent(this.state.email,true)
       this.checkToken()
      }
      console.log(data)

@@ -134,6 +134,7 @@ app.post("/signup", async (req,res)=>{
 // use bcrypt.compareSync to compare the password and password stored in db
 app.post("/login",async (req,res)=>{
     const {email,password} = req.body
+    
     if(!email || !password){
         res.json({
             message: "Email or Password missing"
@@ -142,6 +143,7 @@ app.post("/login",async (req,res)=>{
     else{
     const existingUser = (await database.query("select * from users where email = $1",[email])).rows[0]
     const userID = existingUser?.id
+     const planCheck = (await database.query("select (plans) from users where id = $1",[userID])).rows[0].plans
     if(!existingUser){
         res.json({
             message: "The email does not exist try signing up?"
@@ -153,6 +155,7 @@ app.post("/login",async (req,res)=>{
         
         res.json({
             message: "Login successful",
+            plan: planCheck ? true : false ,
             token: auth.sign({email: existingUser.email,id : userID},process.env.authkey,{expiresIn: "1d"})
         })
           console.log("reached login and succeeded")
@@ -182,13 +185,8 @@ app.use(protect);
 // })
 //only use for testing auth
 //
-app.get("/",(req,res)=>{
-    res.json({
-        message:"Valid user"
-    })
-})
-app.get("/Plans/user", async (req,res)=>{
-    const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
+app.get("/",async (req,res)=>{
+      const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
     if(planCheck){
         res.json({
             plan: true,
@@ -202,6 +200,26 @@ app.get("/Plans/user", async (req,res)=>{
         message: "valid user but doesn't have a pre-existing plan let the user pick one"
     })
 }
+   
+})
+app.get("/Plans/user", async (req,res)=>{
+//     const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
+//     if(planCheck){
+//         res.json({
+//             plan: true,
+//             message: "User has a pre-existing plan redirect to newspage",
+            
+
+//         })
+//     }
+//     else{
+//     res.json({
+//         message: "valid user but doesn't have a pre-existing plan let the user pick one"
+//     })
+// }
+res.json({
+    message: "Valid user token"
+})
 })
 app.patch("/Plans/user",async (req,res)=>{
     const updates = req.body
@@ -233,7 +251,7 @@ app.patch("/Plans/user",async (req,res)=>{
         if(Number( await redis.get(String(req.user.id))) < Date.now()){
             await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
      
-            console.log(userSockets.get(req.user.id))
+            console.log("socket of currENT USER : ",userSockets.get(req.user.id))
            
             const socket = userSockets.get(req.user.id)//returns the stored socket obj not just a contact a whole socket obj
             if(socket){

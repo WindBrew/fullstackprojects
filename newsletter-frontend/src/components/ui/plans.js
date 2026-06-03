@@ -18,7 +18,8 @@ class Plans extends Component {
     }
     checkUser = async () => {
         const response = await fetch("http://localhost:5001/Plans/user",{
-            method:"GET",
+            method:"GET",//error caused is when the user has a pre existing plan they cannot select a new one it auto navs them ]
+            //back to news page
             headers:{
                 "authorization" : localStorage.getItem("token")
             }
@@ -29,10 +30,11 @@ class Plans extends Component {
             localStorage.clear("token")
         }
         else{
-            if(data.plan){
-                this.props.navigate("/NewsPage")
-                return;
-            }
+            // if(data.plan){
+            //     this.props.navigate("/NewsPage")
+            //     this.props.loader(true)
+            //     return;
+            // }
             console.log("Select a plan user")
             console.log("plan get response : ",data)
         }
