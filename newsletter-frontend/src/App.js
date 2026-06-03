@@ -42,11 +42,7 @@ function withRouter(Component){
     return <Component {...props} location={location} navigate={navigate}/>
   }
 }
-const socket = io("http://localhost:5001",{
-  auth:{
-    token: localStorage.getItem("token")
-  }
-})
+
 class App extends Component {
   state = {
     email : "",
@@ -204,8 +200,17 @@ componentDidMount(){
    
     this.setState({dark: true},()=>saveTheme(this.state.dark))
   }
+
   if(localStorage.getItem("token")){
-    socket.on("planExpired",()=>{
+    console.log("token fetched from local storage in app.js")
+      if(this.socket) this.socket.disconnect()
+    this.socket = io("http://localhost:5001",{
+  auth:{
+    token: localStorage.getItem("token")
+  }
+})
+this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
+    this.socket.on("planExpired",()=>{
       this.props.navigate("/Plans")
       console.log("socket.io responded to client")
     })
@@ -214,6 +219,10 @@ componentDidMount(){
 componentDidUpdate(prevProps){
   if(prevProps.location.pathname !== this.props.location.pathname)
       this.setState({ userLocation : this.props.location.pathname})
+}
+componentWillUnmount(){
+  this.socket.disconnect()
+
 }
 toShowtitle = () =>{
   return(

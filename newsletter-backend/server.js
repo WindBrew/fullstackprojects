@@ -19,21 +19,19 @@ async function startServer(){
 const userSockets = new Map()
  const deauthToken = (token) =>{
   console.log("hitting deAuth")
-    if(token){
-        console.log("reaching deauth token")
+    
         try{
             const decoded = auth.verify(token,process.env.authkey)
             console.log("in deauth try : ",decoded)
             return decoded
         }
         catch(err){
-            
+            console.log(err, token,"from deauth token")
         return null
             
         }
     }
-
- }                                                                         
+                                                                         
 const server = http.createServer(app)
 const io = new Server(server ,{
     cors: {
@@ -42,19 +40,18 @@ const io = new Server(server ,{
 })
 io.on("connection",(socket)=>{
     const token = socket.handshake.auth.token
+    console.log("from socket connection , token is ",token)
     const user = deauthToken(token)
+    console.log("from socket connection user is ",user)
 
     if(!user){
         console.log("invalid token")
+    
     }
     else{
     userSockets.set(user.id, socket)
     }
-   
-})
-//the bug is likely arising from the condition where interval is set when the user is detected in cache but user isnt in cache yet
-
- io.on("disconnect",(socket)=>{
+   io.on("disconnect",(socket)=>{
     const token = socket.handshake.auth.token
     const user = deauthToken(token)
         if(userSockets.get(user.id)){
@@ -64,6 +61,10 @@ io.on("connection",(socket)=>{
             console.log("User does not exist")
         }
     })
+})
+//the bug is likely arising from the condition where interval is set when the user is detected in cache but user isnt in cache yet
+
+ 
 
 
 const protect = async (req,res,next) =>{
@@ -74,12 +75,18 @@ const protect = async (req,res,next) =>{
     const decoded = deauthToken(req.headers["authorization"])
     
     console.log(decoded)
-    console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
+    
     if(!decoded){
        return res.status(401).json({message: "Invalid token provided"})
     }
     else{
         req.user = decoded
+        if(await redis.get(String(decoded.id))){
+    console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
+    }
+    else{
+        console.log("redis doesnt have the following user data yet")
+    }
     
  next();
 }
@@ -215,11 +222,14 @@ app.patch("/Plans/user",async (req,res)=>{
         if(Number( await redis.get(String(req.user.id))) < Date.now()){
             await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
      
-            
+            console.log(userSockets.get(req.user.id))
            
             const socket = userSockets.get(req.user.id)//returns the stored socket obj not just a contact a whole socket obj
             if(socket){
+                console.log("Its reachingh socket from top")
+                console.log("this is userID : ",req.user.id, "This is socket : ",socket)
             socket.emit("planExpired")
+            console.log("Is reaching if socket")
             }
             redis.del(String(req.user.id))
                    clearInterval(userExpiry)
@@ -227,6 +237,7 @@ app.patch("/Plans/user",async (req,res)=>{
         }
         else{
             console.log("plan still valid", Date.now())
+            console.log("redis at patch is ",await redis.get(String(req.user.id)))
         }
     
     },5000)

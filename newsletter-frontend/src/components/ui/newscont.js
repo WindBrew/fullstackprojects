@@ -1,8 +1,15 @@
 import React, { Component } from 'react'
-
 import noimg from "../media/noimg.jpg";
+import { useNavigate } from 'react-router-dom';
 
-export default class newsContent extends Component {
+function withNavigate(Component){
+    return function(props){
+        const navigate = useNavigate()
+        return <Component {...props} navigate={navigate} />
+    }
+}
+
+class newsContent extends Component {
     state = {
        
        
@@ -16,6 +23,9 @@ export default class newsContent extends Component {
      
      
     };
+    validateToken = fetch("http://localhost:5001/Newspage",{ //add this endpoint on server side for token auto purposes
+        headers
+    })
     checkNew = (targetDate) =>{
         //no need to split new Date handles iso dates
         //use new Date if u use just Date it wont give proper millisecs for calc

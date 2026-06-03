@@ -33,21 +33,21 @@
      
 //   })
    
-//   }
-import { useNavigate } from "react-router-dom"
-// function withNavigate(Component){
-//     return function(props){
-//         const navigate = useNavigate()
-//         return <Component {...props} navigate = {navigate} />
-//     }
-// }
-const  logout = ()=>{
-localStorage.removeItem("token")
-// const navigate = useNavigate()
-// if(!localStorage.getItem("token")){
-//     navigate("/")
-// }
+// //   }
+// import { useNavigate } from "react-router-dom"
+// // function withNavigate(Component){
+// //     return function(props){
+// //         const navigate = useNavigate()
+// //         return <Component {...props} navigate = {navigate} />
+// //     }
+// // }
+// const  logout = ()=>{
+// localStorage.removeItem("token")
+// // const navigate = useNavigate()
+// // if(!localStorage.getItem("token")){
+// //     navigate("/")
+// // }
 
-console.log("reached the logout func")
-}
-export default logout;
+// console.log("reached the logout func")
+// }
+// export default logout;
