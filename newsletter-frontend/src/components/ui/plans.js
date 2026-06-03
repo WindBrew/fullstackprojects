@@ -29,7 +29,12 @@ class Plans extends Component {
             localStorage.clear("token")
         }
         else{
+            if(data.plan){
+                this.props.navigate("/NewsPage")
+                return;
+            }
             console.log("Select a plan user")
+            console.log("plan get response : ",data)
         }
     }
    setPlan = async (plan) => {const response = await fetch("http://localhost:5001/Plans/user",{

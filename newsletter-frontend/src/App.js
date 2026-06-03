@@ -203,7 +203,9 @@ componentDidMount(){
 
   if(localStorage.getItem("token")){
     console.log("token fetched from local storage in app.js")
-      if(this.socket) this.socket.disconnect()
+      if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
+      //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
+      //the server will read from the old socket instead of new and well no errors but won't work efficiently
     this.socket = io("http://localhost:5001",{
   auth:{
     token: localStorage.getItem("token")

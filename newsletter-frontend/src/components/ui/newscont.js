@@ -23,9 +23,22 @@ class newsContent extends Component {
      
      
     };
-    validateToken = fetch("http://localhost:5001/Newspage",{ //add this endpoint on server side for token auto purposes
-        headers
+    validateToken = async() =>{
+       const response = await fetch("http://localhost:5001/Newspage",{ //add this endpoint on server side for token auto purposes
+        method:"GET",
+        headers:{
+            "authorization" : localStorage.getItem("token")
+        }
     })
+    if(response.ok){
+    const data = await response.json()
+    console.log(data)
+    }
+    else{
+        this.props.navigate("/")
+        console.log("response status 401 error")
+    }
+}
     checkNew = (targetDate) =>{
         //no need to split new Date handles iso dates
         //use new Date if u use just Date it wont give proper millisecs for calc
@@ -141,7 +154,7 @@ class newsContent extends Component {
     async componentDidMount(){
         await this.loadPagedata()
         this.windowToTop()
-        
+        this.validateToken()
         console.log("reached news content")
   
        
@@ -218,3 +231,4 @@ class newsContent extends Component {
     )
 }
 }
+export default withNavigate(newsContent)

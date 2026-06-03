@@ -187,10 +187,21 @@ app.get("/",(req,res)=>{
         message:"Valid user"
     })
 })
-app.get("/Plans/user",(req,res)=>{
+app.get("/Plans/user", async (req,res)=>{
+    const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
+    if(planCheck){
+        res.json({
+            plan: true,
+            message: "User has a pre-existing plan redirect to newspage",
+            
+
+        })
+    }
+    else{
     res.json({
-        message: "valid user"
+        message: "valid user but doesn't have a pre-existing plan let the user pick one"
     })
+}
 })
 app.patch("/Plans/user",async (req,res)=>{
     const updates = req.body
@@ -258,7 +269,7 @@ app.patch("/Plans/user",async (req,res)=>{
         plan: data.plans
     })
 })
-app.get("/news",(req,res)=>{
+app.get("/Newspage",(req,res)=>{
     res.json({
         message:"Welcome to all the news this world has to offer",
         user: req.user
