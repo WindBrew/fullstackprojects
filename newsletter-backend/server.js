@@ -158,7 +158,7 @@ app.post("/login",async (req,res)=>{
         res.json({
             message: "Login successful",
             plan: planCheck ? true : false ,
-            token: auth.sign({email: existingUser.email,id : userID},process.env.authkey,{expiresIn: "1d"})
+            token: auth.sign({email: existingUser.email, id : userID},process.env.authkey,{expiresIn: "1d"})
         })
           console.log("reached login and succeeded")
     }
