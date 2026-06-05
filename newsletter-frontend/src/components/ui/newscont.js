@@ -160,11 +160,12 @@ class newsContent extends Component {
         this.windowToTop()
         this.validateToken()
         console.log("reached news content")
-  
+          console.log("This is page status received in newscont : ",this.props.pageStatus)
     
     }
     async componentDidUpdate(x){
         if(x.category !== this.props.category){
+            console.log("This is page status received in newscont : ",this.props.pageStatus)
             
             this.setState({page: 1},()=>{
                  this.windowToTop()
@@ -197,7 +198,7 @@ class newsContent extends Component {
     return (
       
       <div className='flex pb-16 min-h-screen flex-col pt-[70px] w-full h-full dark:bg-gray-900'>
-        
+      { this.props.pageStatus === "Active" &&
             <>
             <div className="grid  grid-cols-1 sm:grid-cols-2  lg:grid-cols-3 ml-2 mr-2 py-2 p-4 gap-4 dark:text-white dark:bg-gray-900">
     {this.state.newsContdata}
@@ -222,6 +223,16 @@ class newsContent extends Component {
 
     </div>
     </>
+  }
+    {this.props.pageStatus === "Inactive" 
+        &&
+       <div className="flex fixed w-full h-full justify-center items-center  bg-gray-200 text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                 <div className="text-center">
+                    <h1 className="text-4xl font-black">No New News</h1>
+                <br/>
+                <h4 className="font-semibold">Sorry Page Not Found</h4></div>
+            </div>
+    } 
 
     
     

@@ -128,7 +128,7 @@ this.socket.on("connect",()=>console.log("Its connected to the socket successful
   console.log("category length : ",data.response.total)
   
 
-  if(data.response.total<=0){
+  if(data.response.total <= 0){
   this.setState({page:"Inactive"})
    setTimeout(()=>{
     this.setState({loader: false})
@@ -221,7 +221,8 @@ componentDidMount(){
 }
 componentDidUpdate(prevProps){
   if(prevProps.location.pathname !== this.props.location.pathname)
-      this.setState({ userLocation : this.props.location.pathname})
+      this.setState({ userLocation : this.props.location.pathname, page: "Active" , category: ""})
+
 }
 componentWillUnmount(){
   this.socket.disconnect()
@@ -268,18 +269,19 @@ toShowtitle = () =>{
       <div className=" bg-gray-200 text-black h-full dark:bg-gray-900 dark:text-white w-full select-none flex-[1_0_auto]" >
     
      <Modetoggle darkCheck={this.state.dark} loginStat={this.state.isloggedIn} toggleplanCheck={this.state.togglePlanNews} switchTheme = {this.setTheme}/>
-      {(this.state.userLocation === "/NewsPage" || this.state.userLocation === "/InactivePage") && <Navbar pageName = {this.toShowtitle} page={this.state.modalToggler} category={this.passCategory} logoutFunc={this.logout} loader={this.doLoad}/> 
+      {(this.state.userLocation === "/NewsPage" /*|| this.state.userLocation === "/InactivePage"*/) && <Navbar pageName = {this.toShowtitle} page={this.state.modalToggler} category={this.passCategory} logoutFunc={this.logout} loader={this.doLoad}/> 
   }
       {this.state.loader && <Loader/>}
      
         <Routes>
-          <Route path="/InactivePage" element = {<><InactivePage loader={this.doLoad} load={this.state.load}/></>}/>
+          {/* <Route path="/InactivePage" element = {<><InactivePage loader={this.doLoad} load={this.state.load}/></>}/> */}
         <Route path="/" index element = {<StartPage pageTitle={this.toShowtitle} mailtoparent = {this.setMails} loader = {this.doLoad} />}/>
 
         <Route path="/NewsPage" element={<>
-   
+          
            <NewsContent passPage={this.toggleModal} 
            category={this.state.category}
+           pageStatus = {this.state.page}
             loader = {this.doLoad}/> 
              </>}/>  
         <Route path="/Plans" 

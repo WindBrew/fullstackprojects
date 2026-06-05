@@ -51,7 +51,7 @@ io.on("connection",(socket)=>{
     else{
     userSockets.set(user.id, socket)
     }
-   io.on("disconnect",(socket)=>{
+   socket.on("disconnect",(socket)=>{
     const token = socket.handshake.auth.token
     const user = deauthToken(token)
         if(userSockets.get(user.id)){
@@ -251,7 +251,7 @@ app.patch("/Plans/user",async (req,res)=>{
         if(Number( await redis.get(String(req.user.id))) < Date.now()){
             await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
      
-            console.log("socket of currENT USER : ",userSockets.get(req.user.id))
+            console.log("socket of current USER : ",userSockets.get(req.user.id))
            
             const socket = userSockets.get(req.user.id)//returns the stored socket obj not just a contact a whole socket obj
             if(socket){
