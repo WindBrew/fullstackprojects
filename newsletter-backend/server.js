@@ -9,6 +9,8 @@ const http = require("http")
 const {createClient} = require('redis');
 const redis = createClient()
 const app = express()
+const userSockets = new Map()
+const userIntervals = new Map()
 const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
@@ -16,7 +18,7 @@ app.use(cors({origin: 'http://localhost:3000'}))
 async function startServer(){
     await redis.connect()
 }
-const userSockets = new Map()
+
  const deauthToken = (token) =>{
   console.log("hitting deAuth")
     
@@ -143,7 +145,7 @@ app.post("/login",async (req,res)=>{
     else{
     const existingUser = (await database.query("select * from users where email = $1",[email])).rows[0]
     const userID = existingUser?.id
-     const planCheck = (await database.query("select (plans) from users where id = $1",[userID])).rows[0].plans
+     
     if(!existingUser){
         res.json({
             message: "The email does not exist try signing up?"
@@ -151,7 +153,7 @@ app.post("/login",async (req,res)=>{
           console.log("User does not exist try signing up")
     }
     else if(bcrypt.compareSync(password,existingUser.password)){
-        
+        const planCheck = (await database.query("select (plans) from users where id = $1",[userID])).rows[0].plans
         
         res.json({
             message: "Login successful",
@@ -223,7 +225,7 @@ res.json({
 })
 app.patch("/Plans/user",async (req,res)=>{
     const updates = req.body
-    const fields = Object.keys(updates).filter(field=> field !== 'email')
+    const fields = Object.keys(updates).filter(field=> field !== 'email' && field !== "password")
     const updateValues = fields.map(field=>updates[field])
     const updateFields =  fields.map((field,i)=>`${field} = $${i+1}`).join(",")
     if(req.body.plans !== null){
@@ -245,8 +247,11 @@ app.patch("/Plans/user",async (req,res)=>{
     await redis.set(String(req.user.id) , String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
     console.log(typeof (String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime())),String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
         // console.log((((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry))instanceof Date)
-        if(await redis.get(String(req.user.id))){
+        if(await redis.get(String(req.user.id))){ 
+            if(userIntervals.has(req.user.id)) clearInterval(userIntervals.get(req.user.id))
     const userExpiry = setInterval(async ()=>{
+      
+
         console.log("Listening interval")
         if(Number( await redis.get(String(req.user.id))) < Date.now()){
             await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
@@ -270,6 +275,7 @@ app.patch("/Plans/user",async (req,res)=>{
         }
     
     },5000)
+  userIntervals.set(req.user.id,userExpiry)
 }
 
 

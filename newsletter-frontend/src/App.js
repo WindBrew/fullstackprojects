@@ -12,7 +12,7 @@ import {counterInitiate} from "./components/utils/counter";
 import { setSub } from "./components/utils/setSubscriber";
 import { expirationTimer } from "./components/utils/expiration";
 import Modetoggle from "./components/ui/modetoggleswitch";
-import InactivePage from "./components/ui/InactivePage";
+// import InactivePage from "./components/ui/InactivePage";
 import {io} from "socket.io-client";
 import {
   BrowserRouter as Router,
