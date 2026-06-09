@@ -13,6 +13,7 @@ class startPage extends Component {
         password:"",
         switchRoute: "Sign Up"
     }
+  
     checkToken = async() =>{
       const response = await fetch("http://localhost:5001/",{
         method:"GET",
@@ -74,6 +75,8 @@ class startPage extends Component {
      localStorage.setItem("token",data.token)
      if(localStorage.getItem("token")){
       this.props.mailtoparent(this.state.email,true)
+      console.log("Token is true at startPage 78")
+      
       this.checkToken()
      }
      console.log(data)

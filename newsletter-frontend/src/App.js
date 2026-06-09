@@ -80,11 +80,17 @@ class App extends Component {
       //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
       //the server will read from the old socket instead of new and well no errors but won't work efficiently
     this.socket = io("http://localhost:5001",{
-  auth:{
+  auth :{
     token: localStorage.getItem("token")
-  }
+  },
+  reconnectionAttempts: 5
 })
 this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
+this.socket.on("reconnect",()=>this.socket.io.reconnectionAttempts(5))
+this.socket.on("reconnect_failed",()=>{
+  localStorage.removeItem("token")
+  this.props.navigate("/")
+})
     this.socket.on("planExpired",()=>{
       this.props.navigate("/Plans")
       console.log("socket.io responded to client")
@@ -106,6 +112,7 @@ this.socket.on("connect",()=>console.log("Its connected to the socket successful
     if(!localStorage.getItem("token"))
     {
       this.props.navigate("/")
+      this.socket?.disconnect()
     }
   }
   toggleModal = (page) =>{
@@ -217,8 +224,29 @@ componentDidMount(){
     this.setState({dark: true},()=>saveTheme(this.state.dark))
   }
 
-
+   if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
+      //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
+      //the server will read from the old socket instead of new and well no errors but won't work efficiently
+  if(localStorage.getItem("token")){
+    this.socket = io("http://localhost:5001",{
+  auth:{
+    token: localStorage.getItem("token")
+  },
+  reconnectionAttempts: 5
+})
+this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
+this.socket.on("reconnect",()=>this.socket.io.reconnectionAttempts(5))
+this.socket.on("reconnect_failed",()=>{
+  localStorage.removeItem("token")
+  this.props.navigate("/")
+})
+    this.socket.on("planExpired",()=>{
+      this.props.navigate("/Plans")
+      console.log("socket.io responded to client")
+    })
+  }
 }
+
 componentDidUpdate(prevProps){
   if(prevProps.location.pathname !== this.props.location.pathname)
       this.setState({ userLocation : this.props.location.pathname, page: "Active" , category: ""})

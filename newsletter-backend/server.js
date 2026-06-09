@@ -10,7 +10,7 @@ const {createClient} = require('redis');
 const redis = createClient()
 const app = express()
 const userSockets = new Map()
-const userIntervals = new Map()
+
 const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
@@ -24,7 +24,7 @@ async function startServer(){
     
         try{
             const decoded = auth.verify(token,process.env.authkey)
-            console.log("in deauth try : ",decoded)
+            //console.log("in deauth try : ",decoded)
             return decoded
         }
         catch(err){
@@ -41,6 +41,8 @@ const io = new Server(server ,{
     }
 })
 io.on("connection",(socket)=>{
+
+        console.log(socket.handshake.auth)
     const token = socket.handshake.auth.token
     console.log("from socket connection , token is ",token)
     const user = deauthToken(token)
@@ -53,11 +55,14 @@ io.on("connection",(socket)=>{
     else{
     userSockets.set(user.id, socket)
     }
+
+
    socket.on("disconnect",(socket)=>{
-    const token = socket.handshake.auth.token
-    const user = deauthToken(token)
+
+    
         if(userSockets.get(user.id)){
         userSockets.delete(user.id)
+        console.log("socket deleted successfully")
         }
         else{
             console.log("User does not exist")
@@ -76,7 +81,7 @@ const protect = async (req,res,next) =>{
 //    req.user = decoded
     const decoded = deauthToken(req.headers["authorization"])
     
-    console.log(decoded)
+   // console.log(decoded)
     
     if(!decoded){
        return res.status(401).json({message: "Invalid token provided"})
@@ -84,7 +89,7 @@ const protect = async (req,res,next) =>{
     else{
         req.user = decoded
         if(await redis.get(String(decoded.id))){
-    console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
+  //  console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
     }
     else{
         console.log("redis doesnt have the following user data yet")
@@ -99,6 +104,8 @@ const protect = async (req,res,next) =>{
 }
 app.use(express.json())
 
+
+   
 
 app.post("/signup", async (req,res)=>{
 
@@ -188,22 +195,24 @@ app.use(protect);
 //only use for testing auth
 //
 app.get("/",async (req,res)=>{
-      const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
-    if(planCheck){
+      const planCheck = ((await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans)
+    console.log("this is a plan check : ",planCheck)
+    if(!planCheck){
         res.json({
-            plan: true,
-            message: "User has a pre-existing plan redirect to newspage",
+            plan: false,
+         message: "user doesn't have any active plan"
             
 
         })
     }
     else{
     res.json({
-        message: "valid user but doesn't have a pre-existing plan let the user pick one"
+        plan: true,
+          message: "User has a pre-existing plan redirect to newspage",
     })
 }
-   
 })
+
 app.get("/Plans/user", async (req,res)=>{
 //     const planCheck = (await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans
 //     if(planCheck){
@@ -235,51 +244,29 @@ app.patch("/Plans/user",async (req,res)=>{
     else{
         console.log("Null plans not appended")
     }
-    const data = (await database.query("select email , plans from users where email = $1",[req.user.email])).rows[0]
+    const data = (await database.query("select plans,expiry from users where id = $1",[req.user.id])).rows[0]
     
     if(data.plans && data.plans !== null){
-     if(await redis.get(String(req.user.id))){
-         await database.query("update users set expiry = expiry +  $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])     
-     }
-     else{
-    await database.query("update users set expiry = NOW() + $1::interval where id = $2",[data.plans === "Base" ? '30 seconds' : data.plans === "Pro" ? '60 seconds' : '120 seconds',req.user.id])
-     }
-    await redis.set(String(req.user.id) , String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
-    console.log(typeof (String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime())),String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
-        // console.log((((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry))instanceof Date)
-        if(await redis.get(String(req.user.id))){ 
-            if(userIntervals.has(req.user.id)) clearInterval(userIntervals.get(req.user.id))
-    const userExpiry = setInterval(async ()=>{
-      
-
-        console.log("Listening interval")
-        if(Number( await redis.get(String(req.user.id))) < Date.now()){
-            await database.query("update users set (plans,expiry) = ($1,$2) where id = $3",[null,null,req.user.id])
-     
-            console.log("socket of current USER : ",userSockets.get(req.user.id))
-           
-            const socket = userSockets.get(req.user.id)//returns the stored socket obj not just a contact a whole socket obj
-            if(socket){
-                console.log("Its reachingh socket from top")
-                console.log("this is userID : ",req.user.id, "This is socket : ",socket)
-            socket.emit("planExpired")
-            console.log("Is reaching if socket")
-            }
-            redis.del(String(req.user.id))
-                   clearInterval(userExpiry)
-                   return;
+        if(data.expiry){
+            console.log("updated expiry")
+         await database.query("update users set expiry = expiry +  $1::interval where id = $2",[data.plans === "Base" ? '2 minutes' : data.plans === "Pro" ? '4 minutes' : '12 minutes',req.user.id])     
         }
         else{
-            console.log("plan still valid", Date.now())
-            console.log("redis at patch is ",await redis.get(String(req.user.id)))
+        console.log("updated expiry")
+    await database.query("update users set expiry = NOW() + $1::interval where id = $2",[data.plans === "Base" ? '2 minutes' : data.plans === "Pro" ? '4 minutes' : '12 minutes',req.user.id])     
         }
-    
-    },5000)
-  userIntervals.set(req.user.id,userExpiry)
-}
-
-
+    //  const userTime = ((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry?.getTime()) - Date.now()
+    //  if(userTime > 0){
+    //  redis.set(req.user.id,userTime,{
+    //     PX: userTime
+    //  })
     }
+    // await redis.set(String(req.user.id) , String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
+  //  console.log(typeof (String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime())),String(((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry).getTime()))
+        // console.log((((await database.query("select expiry from users where id = $1",[req.user.id])).rows[0].expiry))instanceof Date)
+
+
+    
     else if(data.plans === null){
         console.log(data,"hit null plan")
         await database.query("update users set expiry = null where plans is null")
@@ -293,11 +280,37 @@ app.patch("/Plans/user",async (req,res)=>{
         plan: data.plans
     })
 })
-app.get("/Newspage",(req,res)=>{
+app.get("/Newspage",async (req,res)=>{
+  const planCheck = ((await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans)
+    console.log("this is a plan check : ",planCheck)
+    if(!planCheck){
+        res.json({
+            plan: false,
+         message: "user doesn't have any active plan"
+            
+
+        })
+    }
+    else{
     res.json({
-        message:"Welcome to all the news this world has to offer",
-        user: req.user
+        plan: true,
+          message: "User has a pre-existing plan redirect to newspage",
     })
+}
 })
-server.listen(5001)
+server.listen(5001,()=>{
+     const userExpiry = setInterval(async ()=>{
+      
+
+        // console.log("Listening interval")
+          const expiredUsers =  (await database.query("select id from users where expiry < NOW()")).rows
+        expiredUsers.forEach(user=>userSockets.get(user.id)?.emit("planExpired"))
+            await database.query("update users set (plans,expiry) = ($1,$2) where expiry < NOW()",[null,null])
+            console.log("Interval is active")
+     
+          
+           
+         
+    },5000)
+})
 startServer()

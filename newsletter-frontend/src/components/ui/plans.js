@@ -111,7 +111,7 @@ class Plans extends Component {
                 <span className="mb-6 text-gray-800">Base</span>
                 <span className="mb-3 text-4xl font-medium">Base
                     </span>
-                <span className="text-gray-500">Best for 30 sec read</span>
+                <span className="text-gray-500">Best for 2 Minutes read</span>
             </div> 
              </div>
             {/* <div className="space-y-4 py-9">
@@ -187,7 +187,7 @@ class Plans extends Component {
             <div className="flex flex-col items-center border rounded-3xl border-gray-400 p-4">
                 <span className="mb-6 text-gray-800">Pro</span>
                 <span className="mb-3 text-4xl font-medium">Pro</span>
-                <span className="text-gray-500">Best for 1 min read</span>
+                <span className="text-gray-500">Best for 4 Minutes read</span>
             </div>
             {/* <div className="space-y-4 py-9">
                 <div className="flex items-center gap-3">
@@ -260,7 +260,7 @@ class Plans extends Component {
             <div className="flex flex-col items-center border rounded-3xl  border-gray-400 p-4">
                 <span className="mb-6 text-gray-800">Premium</span>
                 <span className="mb-3 text-4xl font-medium">Premium</span>
-                <span className="text-gray-500">Best for 2 min read</span>
+                <span className="text-gray-500">Best for 12 Minutes read</span>
             </div>
             {/* <div className="space-y-4 py-9">
                 <div className="flex items-center gap-3">

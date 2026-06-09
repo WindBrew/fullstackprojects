@@ -33,8 +33,11 @@ class newsContent extends Component {
     if(response.ok){
         
     const data = await response.json()
-
+    
     console.log(data)
+    if(!data.plan) {this.props.navigate("/Plans") 
+        return
+    } 
     }
     else{
         this.props.navigate("/")
@@ -166,6 +169,7 @@ class newsContent extends Component {
     async componentDidUpdate(x){
         if(x.category !== this.props.category){
             console.log("This is page status received in newscont : ",this.props.pageStatus)
+            
             
             this.setState({page: 1},()=>{
                  this.windowToTop()
