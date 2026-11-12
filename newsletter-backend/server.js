@@ -8,13 +8,22 @@ const {Server} = require("socket.io")
 const http = require("http")
 const {createClient} = require('redis');
 const redis = createClient()
+const cookieParser = require("cookie-parser")
+const cookie = require("cookie")
 const app = express()
 const userSockets = new Map()
 
 const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
-app.use(cors({origin: 'http://localhost:3000'}))
+app.use(cors({origin: 'http://localhost:3000', credentials: true}))
+app.use(cookieParser())
+const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 72 * 60 * 60 * 1000 // 3 day in milliseconds
+  };    
 async function startServer(){
     await redis.connect()
 }
@@ -37,13 +46,16 @@ async function startServer(){
 const server = http.createServer(app)
 const io = new Server(server ,{
     cors: {
-        origin: 'http://localhost:3000'
+        origin: 'http://localhost:3000',
+        credentials: true
     }
 })
 io.on("connection",(socket)=>{
 
-        console.log(socket.handshake.auth)
-    const token = socket.handshake.auth.token
+    const raw = socket.handshake.headers.cookie
+    const parsed = cookie.parse(raw || "")
+    console.log("from socket connection , cookie is ",parsed)
+    const token = parsed.token
     console.log("from socket connection , token is ",token)
     const user = deauthToken(token)
     console.log("from socket connection user is ",user)
@@ -79,7 +91,7 @@ const protect = async (req,res,next) =>{
 //     const token = req.headers["authorization"]
 //     const decoded = auth.verify(token,process.env.authkey)
 //    req.user = decoded
-    const decoded = deauthToken(req.headers["authorization"])
+    const decoded = deauthToken(req.cookies.token)
     
    // console.log(decoded)
     
@@ -128,10 +140,12 @@ app.post("/signup", async (req,res)=>{
     }
     else{
        const userID = (await database.query("insert into users (email,password) values ($1,$2) returning id",[email,cryptPass] )).rows[0].id
-        res.json({
+         res.cookie("token",auth.sign({email: email, id : userID},process.env.authkey,{expiresIn: "1d"}),cookieOptions) 
+       res.json({
             message:"Welcome new user",
-            token:  auth.sign({email:email, id : userID },process.env.authkey,{expiresIn: "1d"})
+         
         })
+      
         console.log("reached signup")
        
 
@@ -161,11 +175,11 @@ app.post("/login",async (req,res)=>{
     }
     else if(bcrypt.compareSync(password,existingUser.password)){
         const planCheck = (await database.query("select (plans) from users where id = $1",[userID])).rows[0].plans
-        
+        res.cookie("token",auth.sign({email: existingUser.email, id : userID},process.env.authkey,{expiresIn: "1d"}),cookieOptions)
         res.json({
             message: "Login successful",
             plan: planCheck ? true : false ,
-            token: auth.sign({email: existingUser.email, id : userID},process.env.authkey,{expiresIn: "1d"})
+            
         })
           console.log("reached login and succeeded")
     }
@@ -194,6 +208,21 @@ app.use(protect);
 // })
 //only use for testing auth
 //
+app.post("/logout",(req,res)=>{
+    
+    socket = userSockets.get(req.user.id)
+    if(socket){
+        socket.emit("logout")
+        console.log("socket logout emitted")
+    }
+    else{
+        console.log("socket not found for user")
+    }
+    res.clearCookie("token",cookieOptions)
+    res.json({
+        message: "Logout successful"
+    })
+})
 app.get("/",async (req,res)=>{
       const planCheck = ((await database.query("select (plans) from users where id = $1",[req.user.id])).rows[0].plans)
     console.log("this is a plan check : ",planCheck)

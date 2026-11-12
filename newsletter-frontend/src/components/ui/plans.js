@@ -20,9 +20,7 @@ class Plans extends Component {
         const response = await fetch("http://localhost:5001/Plans/user",{
             method:"GET",//error caused is when the user has a pre existing plan they cannot select a new one it auto navs them ]
             //back to news page
-            headers:{
-                "authorization" : localStorage.getItem("token")
-            }
+            credentials: "include"
         })
         const data = await response.json()
         if(!(response.ok)){
@@ -43,10 +41,13 @@ class Plans extends Component {
     
 
     method: "PATCH",
+    credentials: "include",
     headers:{
-        "authorization" : localStorage.getItem("token"),
+        
         "Content-Type" : "application/json"
     },
+
+    
     body: JSON.stringify({
         "plans" : plan,
        
@@ -96,7 +97,7 @@ class Plans extends Component {
     return (
 
       <div className="w-full">
-       <button  onClick={this.props.logout} className="ml-4 fixed flex right-[1%] py-2 my-2 px-2 rounded-xl font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
+       <button  onClick={ async ()=>{ await this.props.logout()}}className="ml-4 fixed flex right-[1%] py-2 my-2 px-2 rounded-xl font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
             Log out
           </button>
     <div className="py-20 max-w-5xl min-h-screen mx-auto px-4 ">{/* If you add dark:color to an element

@@ -26,9 +26,7 @@ class newsContent extends Component {
     validateToken = async() =>{
        const response = await fetch("http://localhost:5001/Newspage",{ //add this endpoint on server side for token auto purposes
         method:"GET",
-        headers:{
-            "authorization" : localStorage.getItem("token")
-        }
+        credentials: "include"
     })
     if(response.ok){
         
@@ -64,7 +62,9 @@ class newsContent extends Component {
         
         
     }
+    
   loadPagedata = async () =>{
+    
     if(this.instance){
         this.instance.abort(new Error("Deleted old instance"))//new Error is a js class and 
         // new Error creates its object for us here its used to format whatever arg passed as an error msg 

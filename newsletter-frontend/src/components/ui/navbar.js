@@ -168,7 +168,7 @@ componentDidUpdate(prevProp){
                 Categories
                </li>
               
-               <li className="text-red-500" onClick={this.props.logout}>
+               <li className="text-red-500" onClick={async ()=>{await this.props.logoutFunc(); console.log("clicked Logout")}}>
                 Logout
                </li>
               </ul>
@@ -217,7 +217,7 @@ componentDidUpdate(prevProp){
                
           
             </ul>
-             <button  onClick={this.props.logoutFunc} className="ml-4 mt-3 right-0 py-1 px-2 rounded font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
+             <button  onClick={async ()=>{await this.props.logoutFunc(); console.log("clicked Logout")}} className="ml-4 mt-3 right-0 py-1 px-2 rounded font-medium select-none border-none text-gray-900 dark:text-white bg-slate-300 dark:bg-gray-800 transition-colors hover:border-blue-600 hover:bg-blue-400 hover:text-white dark:hover:text-white">
             Log out
           </button>
            

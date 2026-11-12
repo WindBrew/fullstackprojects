@@ -74,15 +74,18 @@ class App extends Component {
 //of needing a second run to act on the updated state
 //just runs a function after the state updates , avoids reading prev state and only updated state
 // for state reliant functions  
-  if(localStorage.getItem("token")){
+const response =fetch ("http://localhost:5001/",{
+  method: "GET",
+  credentials: "include"
+})
+.then((response) => {
+  if(response.ok){
     console.log("token fetched from local storage in app.js")
       if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
       //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
       //the server will read from the old socket instead of new and well no errors but won't work efficiently
     this.socket = io("http://localhost:5001",{
-  auth :{
-    token: localStorage.getItem("token")
-  },
+  withCredentials: true,
   reconnectionAttempts: 5
 })
 this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
@@ -95,7 +98,7 @@ this.socket.on("reconnect_failed",()=>{
       this.props.navigate("/Plans")
       console.log("socket.io responded to client")
     })
-  }
+  }})
     this.setState({email: (mails)}, () => {
         console.log(this.state.email)
          
@@ -107,13 +110,21 @@ this.socket.on("reconnect_failed",()=>{
          
        
   }
-  logout = () =>{
-    localStorage.removeItem("token")
-    if(!localStorage.getItem("token"))
-    {
-      this.props.navigate("/")
-      this.socket?.disconnect()
+  logout = async () =>{
+   const logout = await fetch("http://localhost:5001/logout",{
+      method: "POST",
+      credentials: "include"
+      
+    })
+    const success = await logout.json()
+    if(success){
+      
+      this.setState({isloggedIn: false, togglePlanNews: "Plans", page: "Active", category: ""},()=>{
+        console.log(success.message)
+        this.props.navigate("/")
+      })
     }
+    
   }
   toggleModal = (page) =>{
     this.setState({modalToggler: page})
@@ -229,20 +240,24 @@ componentDidMount(){
       //the server will read from the old socket instead of new and well no errors but won't work efficiently
   if(localStorage.getItem("token")){
     this.socket = io("http://localhost:5001",{
-  auth:{
-    token: localStorage.getItem("token")
-  },
+  withCredentials: true,
   reconnectionAttempts: 5
 })
 this.socket.on("connect",()=>console.log("Its connected to the socket successfully at client side"))
 this.socket.on("reconnect",()=>this.socket.io.reconnectionAttempts(5))
 this.socket.on("reconnect_failed",()=>{
-  localStorage.removeItem("token")
+  
   this.props.navigate("/")
 })
     this.socket.on("planExpired",()=>{
       this.props.navigate("/Plans")
       console.log("socket.io responded to client")
+    })
+    this.socket.on("logout",()=>{
+      this.setState({isLoggedIn: false, togglePlansNews: "Plans", page: "Active", category: ""}, ()=>{
+        console.log("socket.io logout event received")
+        this.props.navigate("/")
+      })
     })
   }
 }

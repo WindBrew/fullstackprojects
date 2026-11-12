@@ -17,14 +17,12 @@ class startPage extends Component {
     checkToken = async() =>{
       const response = await fetch("http://localhost:5001/",{
         method:"GET",
-        headers:{
-          "authorization":localStorage.getItem("token")
-        }
+        credentials: "include"
       })
       const data = await response.json()
       if(!response.ok){
         console.log("Invalid token or please login/signup")
-        localStorage.removeItem("token")
+        
       }
       else{
         if(data.plan){
@@ -46,9 +44,8 @@ class startPage extends Component {
           console.log("called loader in plans")
       setTimeout(()=>{
         this.props.loader(false)
-        if(localStorage.getItem("token")){
+       
         this.checkToken()
-      }
       },300)
       
     }
@@ -62,6 +59,7 @@ class startPage extends Component {
             this.setState({email: ""}) 
       const response = await fetch(`http://localhost:5001/${this.state.switchRoute === "Sign Up" ? "signup" : "login"}`,{
           method:"POST",
+          credentials: "include",
           headers:{
             "Content-Type":"application/json"
           },
@@ -72,13 +70,9 @@ class startPage extends Component {
         })
      const data = await response.json()
      
-     localStorage.setItem("token",data.token)
-     if(localStorage.getItem("token")){
+     
       this.props.mailtoparent(this.state.email,true)
-      console.log("Token is true at startPage 78")
-      
       this.checkToken()
-     }
      console.log(data)
  
     }
