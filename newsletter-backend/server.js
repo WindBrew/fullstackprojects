@@ -17,6 +17,7 @@ const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
 app.use(cors({origin: process.env.REACT_APP_FRONTEND_URL, credentials: true}))
+app.set("trust proxy", 1)
 app.use(cookieParser())
 const cookieOptions = {
     httpOnly: true,
