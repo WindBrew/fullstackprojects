@@ -24,7 +24,7 @@ class newsContent extends Component {
      
     };
     validateToken = async() =>{
-       const response = await fetch("http://localhost:5001/Newspage",{ //add this endpoint on server side for token auto purposes
+       const response = await fetch(`${process.env.BACKEND_URL}/Newspage`,{ //add this endpoint on server side for token auto purposes
         method:"GET",
         credentials: "include"
     })
@@ -71,7 +71,15 @@ class newsContent extends Component {
         //and return as an error object when logged to console
         //theres also throw used for throwing errors 
         //it sets whatever u pass in its parameter as arguement into an error format
-        //good for debugging and throwing your specific errors efficient in try catch
+        //and not a critical error yet 
+        //here what i mean by  an error is if an error is unhandled
+        // it turns the page red overlay with error msg making ui unusable
+        //catch handles it like a champ and gives u info about the error in my case
+        //we can also use catch to act on whatever went wrong 
+        //abort("") error -> "" abort(new Error(""))-> Error: "" (formatted as error obj) abort() -> 
+        // (->AbortError: aborted without a reason)
+        //returns an error "signal aborted for no reason"
+
     }//abort if an instance already exists aka kill it
     //helps fix loading issues like switching categories too fast can cause multiple fetches
     //this will kill all previous fetches till latest 
