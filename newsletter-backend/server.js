@@ -71,7 +71,7 @@ io.on("connection",(socket)=>{
    socket.on("disconnect",(socket)=>{
 
     
-        if(userSockets.get(user.id)){
+        if(user && userSockets.get(user.id) === socket){
         userSockets.delete(user.id)
         console.log("socket deleted successfully")
         }
