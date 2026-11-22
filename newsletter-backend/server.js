@@ -16,7 +16,7 @@ const userSockets = new Map()
 const database = new pg.Pool({
     connectionString: process.env.databasekey
 })
-app.use(cors({origin: 'http://localhost:3000', credentials: true}))
+app.use(cors({origin: process.env.REACT_APP_FRONTEND_URL, credentials: true}))
 app.use(cookieParser())
 const cookieOptions = {
     httpOnly: true,
@@ -46,7 +46,7 @@ async function startServer(){
 const server = http.createServer(app)
 const io = new Server(server ,{
     cors: {
-        origin: dotenv.REACT_APP_FRONTEND_URL,
+        origin: process.env.REACT_APP_FRONTEND_URL,
         credentials: true
     }
 })
