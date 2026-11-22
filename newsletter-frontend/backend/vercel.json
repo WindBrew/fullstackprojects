@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/backend/:path*", "destination": "https://fullstackprojects-apmk.onrender.com/:path*" }
+  ]
+}
