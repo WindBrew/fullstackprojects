@@ -6,8 +6,8 @@ const cors = require("cors");
 const auth = require("jsonwebtoken");
 const {Server} = require("socket.io")
 const http = require("http")
-const {createClient} = require('redis');
-const redis = createClient()
+// const {createClient} = require('redis');
+
 const cookieParser = require("cookie-parser")
 const cookie = require("cookie")
 const app = express()
@@ -24,9 +24,7 @@ const cookieOptions = {
     sameSite: 'lax',
     maxAge: 72 * 60 * 60 * 1000 // 3 day in milliseconds
   };    
-async function startServer(){
-    await redis.connect()
-}
+
 
  const deauthToken = (token) =>{
   console.log("hitting deAuth")
@@ -100,12 +98,12 @@ const protect = async (req,res,next) =>{
     }
     else{
         req.user = decoded
-        if(await redis.get(String(decoded.id))){
-  //  console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
-    }
-    else{
-        console.log("redis doesnt have the following user data yet")
-    }
+//         if(await redis.get(String(decoded.id))){
+//   //  console.log("this is redis cache memory for current user :",await redis.get(String(decoded.id)))
+//     }
+//     else{
+//         console.log("redis doesnt have the following user data yet")
+//     }
     
  next();
 }
