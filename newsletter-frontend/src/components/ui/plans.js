@@ -17,7 +17,7 @@ class Plans extends Component {
         
     }
     checkUser = async () => {
-        const response = await fetch(`${process.env.BACKEND_URL}/Plans/user`,{
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/Plans/user`,{
             method:"GET",//error caused is when the user has a pre existing plan they cannot select a new one it auto navs them ]
             //back to news page
             credentials: "include"
@@ -37,7 +37,7 @@ class Plans extends Component {
             console.log("plan get response : ",data)
         }
     }
-   setPlan = async (plan) => {const response = await fetch(`${process.env.BACKEND_URL}/Plans/user`,{
+   setPlan = async (plan) => {const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/Plans/user`,{
     
 
     method: "PATCH",

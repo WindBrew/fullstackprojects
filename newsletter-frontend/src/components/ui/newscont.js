@@ -24,7 +24,7 @@ class newsContent extends Component {
      
     };
     validateToken = async() =>{
-       const response = await fetch(`${process.env.BACKEND_URL}/Newspage`,{ //add this endpoint on server side for token auto purposes
+       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/Newspage`,{ //add this endpoint on server side for token auto purposes
         method:"GET",
         credentials: "include"
     })

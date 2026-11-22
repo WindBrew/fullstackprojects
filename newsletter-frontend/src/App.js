@@ -74,7 +74,7 @@ class App extends Component {
 //of needing a second run to act on the updated state
 //just runs a function after the state updates , avoids reading prev state and only updated state
 // for state reliant functions  
-const response =fetch (`${process.env.BACKEND_URL}/`,{
+const response =fetch (`${process.env.REACT_APP_BACKEND_URL}/`,{
   method: "GET",
   credentials: "include"
 })
@@ -84,7 +84,7 @@ const response =fetch (`${process.env.BACKEND_URL}/`,{
       if(this.socket) this.socket.disconnect() //it throws an error if u dont disconnect the previous socket\
       //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
       //the server will read from the old socket instead of new and well no errors but won't work efficiently
-    this.socket = io(process.env.BACKEND_URL,{
+    this.socket = io(process.env.REACT_APP_BACKEND_URL,{
   withCredentials: true,
   reconnectionAttempts: 5
 })
@@ -111,7 +111,7 @@ this.socket.on("reconnect_failed",()=>{
        
   }
   logout = async () =>{
-   const logout = await fetch(`${process.env.BACKEND_URL}/logout`,{
+   const logout = await fetch(`${process.env.REACT_APP_BACKEND_URL}/logout`,{
       method: "POST",
       credentials: "include"
       
@@ -239,7 +239,7 @@ componentDidMount(){
       //because react strict mdoe invokes it twice two sockets are created and if you dont disconnect prev one before adding new
       //the server will read from the old socket instead of new and well no errors but won't work efficiently
   if(localStorage.getItem("token")){
-    this.socket = io(process.env.BACKEND_URL,{
+    this.socket = io(process.env.REACT_APP_BACKEND_URL,{
   withCredentials: true,
   reconnectionAttempts: 5
 })

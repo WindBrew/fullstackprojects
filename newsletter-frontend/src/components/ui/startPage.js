@@ -15,7 +15,7 @@ class startPage extends Component {
     }
   
     checkToken = async() =>{
-      const response = await fetch(`${process.env.BACKEND_URL}/`,{
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/`,{
         method:"GET",
         credentials: "include"
       })
@@ -57,7 +57,7 @@ class startPage extends Component {
         console.log( "email:", this.state.email,
             "password:", this.state.password)
             this.setState({email: ""}) 
-      const response = await fetch(`${process.env.BACKEND_URL}/${this.state.switchRoute === "Sign Up" ? "signup" : "login"}`,{
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/${this.state.switchRoute === "Sign Up" ? "signup" : "login"}`,{
           method:"POST",
           credentials: "include",
           headers:{
