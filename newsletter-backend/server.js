@@ -22,7 +22,7 @@ app.use(cookieParser())
 const cookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 72 * 60 * 60 * 1000 // 3 day in milliseconds
   };    
 
