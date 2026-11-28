@@ -54,7 +54,7 @@ class startPage extends Component {
     }
        sendMaildata = async (e) =>{
         
-        
+        this.props.loader(true)
         e.preventDefault();//if u press enter without this to submit it reloads page and react resets back
         // to starter page again
         console.log( "email:", this.state.email,
@@ -73,7 +73,7 @@ class startPage extends Component {
         })
      const data = await response.json()
      
-     
+      this.props.loader(false)
       this.props.mailtoparent(this.state.email,true)
       this.checkToken()
      console.log(data)
