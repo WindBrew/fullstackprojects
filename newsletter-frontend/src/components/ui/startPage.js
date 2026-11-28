@@ -23,6 +23,7 @@ class startPage extends Component {
       const data = await response.json()
       if(!response.ok){
         console.log("Invalid token or please login/signup")
+        this.props.loader(false)
         
       }
       else{
