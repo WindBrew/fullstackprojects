@@ -15,6 +15,7 @@ class startPage extends Component {
     }
   
     checkToken = async() =>{
+        this.props.loader(true)
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/`,{
         method:"GET",
         credentials: "include"
@@ -25,6 +26,7 @@ class startPage extends Component {
         
       }
       else{
+        this.props.loader(false)
         if(data.plan){
           this.props.navigate("/NewsPage")
           this.props.loader(true)
