@@ -150,7 +150,7 @@ componentDidUpdate(prevProp){
             
             className="flex items-center space-x-3 rtl:space-x-reverse"
           >
-            <span className="self-center text-xl text-heading font-bold whitespace-nowrap">
+            <span className="self-center text-xl text-heading left-1 font-bold whitespace-nowrap">
              {this.props.pageName()}
             </span>
             
@@ -189,7 +189,7 @@ componentDidUpdate(prevProp){
           </div>
           <div className="hidden select-none md:flex  md:w-auto  " id="navbar-default">
 
-            <ul className=" font-medium flex flex-col md:flex-row  mt-4 border border-default rounded-base bg-neutral-secondary-soft  space-x-8 rtl:space-x-reverse mt-0 border-0 bg-neutral-primary">
+            <ul className="right-1 font-medium flex flex-col md:flex-row  mt-4 border border-default rounded-base bg-neutral-secondary-soft  space-x-8 rtl:space-x-reverse mt-0 border-0 bg-neutral-primary">
              
               <li>
                 <span className="hover:text-blue-900 hover:scale-105 hover:cursor-pointer" onClick={()=>{this.setState({categories : !this.state.categories})}}>Categories</span>
